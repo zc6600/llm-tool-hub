@@ -1,0 +1,49 @@
+[build-system]
+# This defines the tools needed to build your package.
+# We use 'setuptools' as backend, which is the standards choice.
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# --- Mandatory Metadata for the Project ---
+name = "llm-tool-hub"
+version = "0.0.1"
+description = "A modulat, highly-integrable collection of tools for LLM agents, following the Function Calling standard."
+readme = "README.md"
+authors = [
+    {name = "Chen Zhu", email = "zc18202534647@gmail.com"}
+]
+license = {file= "LICENSE"}
+keywords = ["llm", "agent", "tool", "function-calling", "ai"]
+
+# Classifiers help users and repositories categorize your project
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+
+# Runtime dependencies
+dependencies = [
+
+
+]
+
+[project.urls]
+Homepage = "https://github.com/zc6600/llm-tool-hub"
+Repository = "https://github.com/zc6600/llm-tool-hub"
+
+# -----------------------------------------------
+# Configuration for the Setuptools Backend
+# -----------------------------------------------
+
+[tool.setuptools]
+# This tells setuptools to look for source code in the 'src' directory
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+# This tells setuptools to find all sub-packages within the 'src' directory.
+where = ["src"]

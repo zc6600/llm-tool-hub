@@ -1,0 +1,16 @@
+Metadata-Version: 2.4
+Name: llm-tool-hub
+Version: 0.0.1
+Summary: A modulat, highly-integrable collection of tools for LLM agents, following the Function Calling standard.
+Author-email: Chen Zhu <zc18202534647@gmail.com>
+Project-URL: Homepage, https://github.com/zc6600/llm-tool-hub
+Project-URL: Repository, https://github.com/zc6600/llm-tool-hub
+Keywords: llm,agent,tool,function-calling,ai
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.11
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
