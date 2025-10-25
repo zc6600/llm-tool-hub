@@ -1,4 +1,4 @@
-# src/llm_tool_hub/filesystem_tool.py
+# src/llm_tool_hub/filesystem_tool/read_file_tool.py
 
 import logging
 from typing import Dict, Any, Union
@@ -116,7 +116,7 @@ class ReadFileTool(BaseTool):
                 return sum(1 for line in f)
         except Exception:
             return -1
-
+    
     def run(self, file_path: str, start_line: int = 1, end_line: int = None) -> str:
         """
         Execute the file reading operation with line-based chunking and size limits.
@@ -135,60 +135,62 @@ class ReadFileTool(BaseTool):
             if end_line is not None and end_line <= start_line:
                 return "ERROR: end_line must be greater than start_line."
             
+            effective_end_line = end_line if end_line is not None else float('inf')
+
             content = []
-            current_size = 0
             lines_read_count = 0
 
             with open(target_path, 'r', encoding='utf-8') as f:
-                
                 # Iterate through file lines 
                 for line_number, line in enumerate(f, 1):
-
                     # A. Apply Start Line Filter
                     if line_number < start_line:
                         continue
                     
                     # B. Apply End Line Filter
-                    if end_line is not None and line_number >= end_line:
+                    if line_number >= effective_end_line:
                         break
                     
-                    # C. Truncate line if exceeds max length
-                    if len(line) > MAX_LINE_CHARS:
-                        truncated_line = line[:MAX_LINE_CHARS]
-                        truncated_line = truncated_line.rstrip('\n')
+                    # C. Format and Truncate line
+                    line_content = line.rstrip('\n')
 
-                        content.append(f"[WARNING: Line {line_number} was truncated to {MAX_LINE_CHARS} characters]\n")
-                        if truncated_line.endswith('\n') or line.endswith('\n'):
-                            content.append(truncated_line.rstrip('\n') + "\n")
-                        else:
-                            content.append(truncated_line)
-                        continue
-                    line_bytes = len(line.encode('utf-8'))
+                    if len(line_content) > MAX_LINE_CHARS:
+                        truncated_content = line_content[:MAX_LINE_CHARS]
 
-                    content.append(line)
+                        formatted_line = (
+                            f"{line_number}:{truncated_content} "
+                            f"[WARNING: Line {line_number} was truncated to {MAX_LINE_CHARS} characters]")
+                    else:
+                        formatted_line = f"{line_number}:{line_content}"
 
-                    current_size += line_bytes
-                    lines_read_count +=1
+                    content.append(formatted_line)
+                    lines_read_count += 1
 
-                final_content = "".join(content)
-                
-                if not final_content and start_line > 1:
+                last_line_read = start_line + lines_read_count - 1
+                read_content_string = "\n".join(content)
+
+                if lines_read_count == 0:
+                    # Only check total lines when no content was read
                     total_lines = self._get_total_lines(target_path)
 
                     if total_lines == -1:
                         raise Exception("Could not determine total line count due to file system error")
 
-                    if start_line > total_lines:
+                    if start_line > total_lines and total_lines > 0:
                         return (
                             f"ERROR: Tool excution failed for '{file_path}'. "
                             f"Reason: Requested start_line ({start_line}) is greater than the total lines in file ({total_lines})."
                         )
-                last_line_read = start_line + lines_read_count - 1
-
+                    
+                    return (
+                        f"SUCCESS: Chunk of '{file_path}' (Lines {start_line}-{total_lines}) is empty. "
+                        f"Total lines in file: {total_lines}." 
+                    )
+    
                 return (
                     f"SUCCESS: Chunk of '{file_path}' (Lines {start_line}-{last_line_read}):\n"
                     "-------------------------------------------------------------------------- \n"
-                    f"{final_content}\n"
+                    f"{read_content_string}\n"
                     "-------------------------------------------------------------------------- \n"
                 )
         except (FileNotFoundError, ValueError) as e:
@@ -200,3 +202,6 @@ class ReadFileTool(BaseTool):
 # Current logic fails to handle large single-line files, with could cause overload of context
 # Solution: Requires introducing a 'start_offset' for byte-level reading
 
+# TODO
+# Line-Awareness Reading tool for concise reading and editing
+# current method is "n:", "n" might save more token but less llm-friendly, an ablation study can be conducted.
