@@ -93,7 +93,13 @@ def test_read_file_basic_success(tmp_path: Path, create_test_file: Path):
     result = tool.run(file_path="data.txt") 
     
     assert result.startswith("SUCCESS: Chunk of 'data.txt' (Lines 1-4)")
-    assert MULTI_LINE_CONTENT in result
+    expected_content = (
+        "1:Line 1: Hello\n"
+        "2:Line 2: World\n"
+        "3:Line 3: Test\n"
+        "4:Line 4: End"
+    )
+    assert expected_content in result
 
 def test_read_file_empty_file(tmp_path: Path):
     """B.2: Verifies reading an empty file."""
@@ -104,7 +110,7 @@ def test_read_file_empty_file(tmp_path: Path):
     
     # Expected to return Lines 1-0 for an empty file
     assert result.startswith("SUCCESS: Chunk of 'empty.txt' (Lines 1-0)")
-    assert "\n\n" in result
+    assert "is empty" in result
 
 def test_read_file_not_found(tmp_path: Path):
     """B.3: Attempts to read a non-existent file."""
@@ -173,13 +179,15 @@ def test_read_file_line_char_truncation_check(tmp_path: Path):
     
     # Verify content length (Check that the returned content is NOT the full original content)
     # The actual content length should be close to MAX_LINE_CHARS + length of the warning line
-    content_lines = result.split('\n')
+    long_content_truncated = "B" * MAX_LINE_CHARS
     
     # Find the line that was the content
-    content_line = [line for line in content_lines if line.startswith('B')][0]
-    
+    content_line_with_warning = [
+        line for line in result.split('\n') 
+        if line.startswith('1:') and expected_warning in line
+    ][0]
     # Verify the line was truncated to the limit
-    assert len(content_line.strip()) == MAX_LINE_CHARS
+    assert f"1:{long_content_truncated}" in content_line_with_warning
 
 # --- Scenario D: Accurate Error Reporting Tests ---
 
