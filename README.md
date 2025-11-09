@@ -22,91 +22,51 @@
 
 ### Installation
 
-#### Option 1: Development Installation (Recommended)
-
 ```bash
-
 # Clone the repository
-
 git clone https://github.com/zc6600/llm-tool-hub.git
-
 cd llm-tool-hub
 
-
-# Install in development mode
-
-pip install -e.
-
-
-# Install with optional dev dependencies
-
-pip install -e".[dev]"
-
-```
-
-#### Option 2: Direct Installation from Source
-
-```bash
-
+# Install the package
 pip install .
 
+# (Optional) Install with development dependencies for running tests
+pip install ".[dev]"
 ```
 
 ### Basic Usage
 
 ```python
-
 from llm_tool_hub.filesystem_tool.create_file_tool import CreateFileTool
-
 from llm_tool_hub.filesystem_tool.read_file_tool import ReadFileTool
 
-
 # Initialize tools
-
 create_tool = CreateFileTool(root_path="/workspace")
-
 read_tool = ReadFileTool(root_path="/workspace")
 
-
 # Create a file
-
 result = create_tool.run(
-
     file_path="hello.txt",
-
     content="Hello, World!",
-
     return_content=True
-
 )
-
 print(result)
-
 
 # Read the file
-
 result = read_tool.run(file_path="hello.txt")
-
 print(result)
-
 ```
 
 ### LangChain Integration
 
 ```python
-
 from llm_tool_hub.integrations.langchain_adapter import LangchainToolAdapter
 
-
 # Convert to LangChain StructuredTool
-
 lc_tool = LangchainToolAdapter.to_langchain_structured_tool(create_tool)
 
-
 # Use with LangChain agents
-
 agent = initialize_agent([lc_tool], llm, agent_type="structured-chat")
-
 ```
 
 ## 📚 Available Tools
