@@ -1,7 +1,7 @@
 # src/llm_tool_hub/integrations/langchain_adapter.py
 
 import logging
-from typing import Type, Any, Dict, Union
+from typing import Type, Any, Dict, Union, List
 from pydantic import BaseModel, create_model
 
 from ..base_tool import BaseTool # Relative import to BaseTool
@@ -61,14 +61,30 @@ class LangchainToolAdapter:
         return InputSchema
 
     @staticmethod
-    def to_langchain_structured_tool(tool_instance: BaseTool) -> Any:
+    def to_langchain_structured_tool(tool_instance: Union[BaseTool, List[BaseTool]]) -> Any:
         """
-        Converts a BaseTool instance into a LangChain StructuredTool instance.
+        Converts a BaseTool instance (or list of instances) into LangChain StructuredTool(s).
 
-        :param tool_instance: An initialized instance of a BaseTool subclass.
-        :return: A LangChain StructuredTool instance.
+        :param tool_instance: A BaseTool instance OR a list of BaseTool instances.
+        :return: A LangChain StructuredTool instance (if input is single tool) or 
+                 a list of StructuredTool instances (if input is a list).
         :raises ImportError: If LangChain core components are not installed.
+        :raises TypeError: If input is not a BaseTool instance or list of BaseTool instances.
         """
+        # Handle list input: recursively convert each tool
+        if isinstance(tool_instance, list):
+            return [
+                LangchainToolAdapter.to_langchain_structured_tool(tool)
+                for tool in tool_instance
+            ]
+        
+        # Validate single tool input
+        if not isinstance(tool_instance, BaseTool):
+            raise TypeError(
+                f"Expected BaseTool instance or list of BaseTool instances, "
+                f"got {type(tool_instance).__name__}"
+            )
+        
         try:
             # We specifically target langchain_core for stability
             from langchain_core.tools import StructuredTool
