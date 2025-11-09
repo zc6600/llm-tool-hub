@@ -52,13 +52,28 @@ class BaseTool(ABC):
 
     def get_metadata(self) -> Dict[str, Any]:
         """
-        Returns the tool's meta dictionary in the format required by 
+        Returns the tool's metadata in OpenAI Function Calling format.
+        This format is compatible with OpenAI, OpenRouter, and other LLM providers.
+        
+        :return: A dictionary in the format:
+            {
+                "type": "function",
+                "function": {
+                    "name": str,
+                    "description": str,
+                    "parameters": Dict[str, Any]
+                }
+            }
         """
         return {
-            "name": self.name, 
-            "description": self.description,
-            "parameters": self.parameters
+            "type": "function",
+            "function": {
+                "name": self.name, 
+                "description": self.description,
+                "parameters": self.parameters,
+            }
         }
+    
     
     def to_callable(self) -> Callable:
         """
@@ -81,3 +96,4 @@ class BaseTool(ABC):
     def __str__(self) -> str:
         """Provides a debugging-friendly string representation."""
         return f"<BaseTool: {self.name}>"
+    

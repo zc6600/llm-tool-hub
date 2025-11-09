@@ -3,11 +3,11 @@
 import logging
 from typing import Dict, Any, Union
 from pathlib import Path
-from ..base_tool import BaseTool
+from .base_filesystem_tool import BaseFileSystemTool
 
 logger = logging.getLogger(__name__)
 MAX_LINE_CHARS = 5000
-class ReadFileTool(BaseTool):
+class ReadFileTool(BaseFileSystemTool):
     """
     A tool to safely read the content of a text file from the project's working directory.
 
@@ -55,56 +55,6 @@ class ReadFileTool(BaseTool):
 
     root_path: Path
     unsafe_mode: bool
-    def __init__(self, root_path: Union[str, Path] = None, unsafe_mode: bool = False):
-        super().__init__()
-
-        if root_path is None:
-            self.root_path = Path.cwd().resolve()
-        else:
-            self.root_path = Path(root_path).resolve()
-
-        # LBYL
-        if not self.root_path.is_dir():
-            raise ValueError(f"Root path must be a valid directory: {self.root_path}")
-        
-        self.unsafe_mode = unsafe_mode
-
-        if self.unsafe_mode:
-            logger.warning("ReadFileTool initialized in UNSAFE MODE. LLM agent can edit all files on your system")
-
-        logger.debug(f"ReadFileTool initialized with secure root: {self.root_path}")
-
-    def _check_path_safety(self, file_path: str) -> Path:
-        """
-        Validates the file path to prevent reading. 
-        Disable the root_path check if self.unsafe_mode is True.
-        """
-        # If llm provide a empty file path, it will see the error message
-        if not file_path:
-            raise ValueError("File path is empty, please check your path configuration")
-
-        input_path = Path(file_path)
-
-        target_path = (self.root_path / input_path).resolve()
-
-        # Path Traversal Check
-        if not self.unsafe_mode:
-            try:
-                target_path.relative_to(self.root_path)
-            except ValueError:
-                # Access Denied: File path outside the configured root.
-                raise ValueError(f"Access Denied: File path '{file_path}' must be inside the configured root: {self.root_path}")
-            
-        # Existence Check
-        if not target_path.exists():
-            raise FileNotFoundError(f"File not found at path: {file_path}")
-        
-
-        # Is File Check
-        if not target_path.is_file():
-            raise ValueError(f"Path is not a file: {file_path}")
-        
-        return target_path
 
     def _get_total_lines(self, target_path: Path) -> int:
         """
@@ -128,7 +78,7 @@ class ReadFileTool(BaseTool):
         """
         try:
             # Path Validation
-            target_path = self._check_path_safety(file_path)
+            target_path = self._check_path_safety(file_path, must_exist=True, allow_dir=False)
 
             # Input Validation
             start_line = max(1, start_line)

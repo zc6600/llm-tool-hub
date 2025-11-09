@@ -118,7 +118,7 @@ def test_read_file_not_found(tmp_path: Path):
     result = tool.run(file_path="non_existent_file.txt") 
     
     assert result.startswith("ERROR:")
-    assert "File not found" in result
+    assert "File not found at path:" in result
 
 def test_read_file_is_directory(tmp_path: Path):
     """B.4: Attempts to read a directory (tmp_path itself)."""
@@ -126,7 +126,8 @@ def test_read_file_is_directory(tmp_path: Path):
     result = tool.run(file_path=".") 
     
     assert result.startswith("ERROR:")
-    assert "Path is not a file" in result
+    assert "Path is a directory:" in result
+    assert "Operation requires a file path" in result
 
 def test_read_file_empty_path(tmp_path: Path):
     """B.5: Attempts to provide an empty file path."""
