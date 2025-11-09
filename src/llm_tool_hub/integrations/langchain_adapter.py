@@ -29,6 +29,10 @@ class LangchainToolAdapter:
         """
         Converts the BaseTool's JSON Schema 'parameters' into a Pydantic Model, 
         which is required by LangChain's StructuredTool.
+        
+        Handles edge cases like:
+        - Type as list (e.g., ["string", "null"])
+        - Missing type field
         """
         json_properties = tool_instance.parameters.get("properties", {})
         json_required = tool_instance.parameters.get("required", [])
@@ -37,6 +41,16 @@ class LangchainToolAdapter:
 
         for name, prop in json_properties.items():
             json_type = prop.get("type", "string")
+            
+            # Handle case where type is a list (e.g., ["string", "null"])
+            # Extract the first non-null type
+            if isinstance(json_type, list):
+                json_type = next((t for t in json_type if t != "null"), "string")
+            
+            # Ensure json_type is hashable before dict lookup
+            if not isinstance(json_type, str):
+                json_type = str(json_type)
+            
             py_type = PYDANTIC_TYPE_MAP.get(json_type, str)
             
             # Determine if the field is required or optional (Union[Type, None])
