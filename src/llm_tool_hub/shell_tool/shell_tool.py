@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 # --- Constants ---
 MAX_OUTPUT_LENGTH = 5000
-DEFAULT_TIMEOUT = 10 
+DEFAULT_TIMEOUT = 100 
 
 # --- Helper Function: Output Truncation ---
 def _truncate_output(output: str) -> tuple[str, str]:
@@ -37,6 +37,9 @@ class ShellTool(BaseTool):
         "**[DANGEROUS: OS INTERACTION]** Executes a shell command (e.g., 'ls -l', 'git status', 'pip install') "
         "and returns the standard output (stdout), standard error (stderr), and return code in a structured format. "
         "The operation runs from the project root directory. Use the 'timeout' parameter for long-running commands. "
+        "IMPORTANT: For long-running commands like 'pip install', 'git clone', 'npm install', or machine learning training, "
+        "ALWAYS increase the 'timeout' parameter (e.g., timeout=120 for 2 minutes or timeout=300 for 5 minutes) to avoid timeout errors. "
+        f"Default timeout is {DEFAULT_TIMEOUT} seconds. "
         f"Output is truncated to {MAX_OUTPUT_LENGTH} characters for safety."
     )
     
