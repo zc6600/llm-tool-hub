@@ -162,8 +162,15 @@ class ShellTool(BaseTool):
             # --- Timeout Handling: Capture Partial Output ---
             
             # Extract partial stdout and stderr from the exception object
+            # Note: e.stdout and e.stderr may be bytes or None, even with text=True
             partial_stdout = e.stdout if e.stdout else "No partial stdout captured."
             partial_stderr = e.stderr if e.stderr else "No partial stderr captured."
+            
+            # Ensure outputs are strings (decode bytes if necessary)
+            if isinstance(partial_stdout, bytes):
+                partial_stdout = partial_stdout.decode(encoding, errors='replace')
+            if isinstance(partial_stderr, bytes):
+                partial_stderr = partial_stderr.decode(encoding, errors='replace')
             
             # Truncate partial output
             stdout_truncated, stdout_warning = _truncate_output(partial_stdout)
