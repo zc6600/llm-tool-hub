@@ -51,7 +51,7 @@ def test_base_tool_enforces_run_implemention():
         MissingRunTool()
 
     assert "Can't instantiate abstract class" in str(excinfo.value)
-    assert "with abstract method run" in str(excinfo.value)
+    assert "abstract method" in str(excinfo.value) and "run" in str(excinfo.value)
 
 
 def test_base_tool_to_callable_integration_helper():
